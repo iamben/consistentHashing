@@ -21,11 +21,12 @@ class Node(object):
 
 
 class ConsistentHashRing(object):
-    def __init__(self):
+    def __init__(self, replication=3):
         self.hash = hashlib.sha1
         self.ring = dict()
         self._nodeKeys = []
         self.capacityMap = dict() # reverse capacity query
+        self.replication = replication
 
     def addNode(self, node):
         """
@@ -57,9 +58,10 @@ class ConsistentHashRing(object):
         pos = self.generatePosition(key)
         node = bisect.bisect_right(self._nodeKeys, pos)
         try:
-            return self.ring[self._nodeKeys[node]]
+            return [self.ring[self._nodeKeys[node + x]] for x in range(0,
+                    self.replication)]
         except IndexError:
-            return self.ring[self._nodeKeys[0]]
+            return self.ring.values()[:self.replication]
 
     def generatePosition(self, key):
         """
