@@ -25,22 +25,25 @@ class ConsistentHashRing(object):
         self.hash = hashlib.sha1
         self.ring = dict()
         self._nodeKeys = []
+        self.capacityMap = dict() # reverse capacity query
 
     def addNode(self, node):
         """
         insert node onto ring with KEY="${nodeString}-${vnodeNumber}"
         """
+        self.capacityMap[(node.hostname, node.port)] = node.capacity
         for i in range(0, node.capacity):
             pos = self.generatePosition("%s-%d" % (node, i))
             self.ring[pos] = node
             bisect.insort(self._nodeKeys, pos)
         
-    def removeNode(self, node):
+    def removeNode(self, host, port):
         """
         remove a node from ring
         """
-        for i in range(0, node.capacity):
-            pos = self.generatePosition("%s-%d" % (node, i))
+        capacity = self.capacityMap[(host, port)]
+        for i in range(0, capacity):
+            pos = self.generatePosition("%s-%d" % (Node(host, port, capacity), i))
             del self.ring[pos]
             self._nodeKeys.remove(pos)
 
