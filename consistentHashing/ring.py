@@ -60,10 +60,12 @@ class ConsistentHashRing(object):
         pos = self.generatePosition(key)
         node = bisect.bisect_right(self._nodeKeys, pos)
         try:
-            return [self.ring[self._nodeKeys[(node + x) % len(self._nodeKeys)]]
+            result = [self.ring[self._nodeKeys[(node + x) % len(self._nodeKeys)]]
                 for x in range(0, self.replication)]
         except IndexError:
-            return self.ring.values()[:self.replication]
+            result = self.ring.values()[:self.replication]
+
+        return list(set(result)) # uniquify
 
     def generatePosition(self, key):
         """
