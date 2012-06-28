@@ -35,6 +35,8 @@ class ConsistentHashRing(object):
         self.capacityMap[(node.hostname, node.port)] = node.capacity
         for i in range(0, node.capacity):
             pos = self.generatePosition("%s-%d" % (node, i))
+            if pos in self.ring:
+                continue
             self.ring[pos] = node
             bisect.insort(self._nodeKeys, pos)
         
